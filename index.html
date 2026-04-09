@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PersExplorer — Mars Rover Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#050509;--sf:#0c0c16;--sf2:#141422;--bd:rgba(196,90,44,0.12);--tx:#e2e8f0;--tx2:#94a3b8;--tx3:#64748b;--ms:#c45a2c;--ms2:#e8934a;--cy:#22d3ee;--em:#34d399;--am:#fbbf24;--ac:#818cf8;--rd:10px}
+html{font-size:15px}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--tx);overflow-x:hidden}
+.app{max-width:1440px;margin:0 auto;padding:12px}
+header{display:flex;align-items:center;justify-content:space-between;padding:10px 0 14px;border-bottom:1px solid var(--bd);margin-bottom:12px;flex-wrap:wrap;gap:6px}
+.logo{font-family:'Space Grotesk',sans-serif;font-size:21px;font-weight:700;display:flex;align-items:center;gap:8px}
+.logo-d{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#e8934a,#8b3a1a);box-shadow:0 0 10px rgba(232,121,59,0.3)}
+.bdg{font-size:10px;padding:2px 8px;border-radius:100px;border:1px solid var(--bd);color:var(--ms2);background:rgba(232,147,74,0.08)}
+.hs{display:flex;gap:16px;font-size:11px;color:var(--tx3);font-family:'Space Grotesk'}.hs strong{color:var(--ms2)}
+.top{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
+.st{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rd);padding:10px;text-align:center}
+.sv{font-family:'Space Grotesk';font-size:20px;font-weight:700}.sl{font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.8px;margin-top:2px}
+.mg{display:grid;grid-template-columns:1fr 300px;gap:12px;margin-bottom:12px}
+.cd{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rd);padding:14px;position:relative;overflow:hidden}
+.cd::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(196,90,44,0.2),transparent)}
+.ct{font-family:'Space Grotesk';font-size:11px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.dt{width:5px;height:5px;border-radius:50%;display:inline-block}
+.gw{position:relative;border-radius:8px;overflow:hidden;background:#020204}
+#gc{width:100%;height:500px;cursor:grab;transform-origin:center center}#gc:active{cursor:grabbing}
+.ghud{position:absolute;top:8px;left:8px;display:flex;gap:4px;z-index:10;flex-wrap:wrap}
+.gb{padding:3px 10px;border-radius:5px;font-size:10px;border:1px solid var(--bd);background:rgba(5,5,9,0.85);color:var(--tx2);cursor:pointer;font-family:'Space Grotesk';transition:all .15s;backdrop-filter:blur(6px)}
+.gb.on{border-color:var(--ms);color:var(--ms2)}.gb:hover{border-color:var(--ms2)}
+.gi{position:absolute;bottom:8px;left:8px;font-family:'JetBrains Mono';font-size:11px;color:var(--ms2);background:rgba(5,5,9,0.85);padding:3px 8px;border-radius:5px;z-index:10;backdrop-filter:blur(6px)}
+.ld{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;font-family:'Space Grotesk';font-size:14px;color:var(--ms2);z-index:20;background:var(--bg)}
+.sp{width:30px;height:30px;border:3px solid var(--bd);border-top-color:var(--ms2);border-radius:50%;animation:spn 1s linear infinite}
+@keyframes spn{to{transform:rotate(360deg)}}
+.tab-row{display:flex;gap:4px;margin-bottom:8px}
+.tab{padding:5px 14px;border-radius:6px;font-size:11px;border:1px solid var(--bd);background:var(--sf2);color:var(--tx2);cursor:pointer;font-family:'Space Grotesk';transition:all .15s}
+.tab.on{border-color:var(--ms);color:var(--ms2);background:rgba(232,147,74,0.08)}
+#jezeroMap{width:100%;height:500px;background:#0e0804;border-radius:8px;cursor:crosshair;display:none;transform-origin:center center}
+.sr{display:flex;align-items:center;gap:8px;margin-top:8px}
+.sol{flex:1;height:3px;-webkit-appearance:none;background:var(--sf2);border-radius:2px;outline:none}
+.sol::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--ms2);cursor:pointer;border:2px solid var(--bg)}
+.sll{font-size:10px;color:var(--tx3);font-family:'JetBrains Mono';min-width:55px}
+.wl{max-height:510px;overflow-y:auto;display:flex;flex-direction:column;gap:3px;padding-right:4px}
+.wl::-webkit-scrollbar{width:3px}.wl::-webkit-scrollbar-thumb{background:var(--sf2);border-radius:2px}
+.wi{padding:8px 10px;border-radius:7px;border:1px solid var(--bd);cursor:pointer;transition:all .15s;background:var(--sf2);font-size:11px}
+.wi:hover,.wi.on{border-color:var(--ms);background:rgba(232,147,74,0.08)}
+.wn{font-family:'Space Grotesk';font-weight:600;font-size:12px;margin-bottom:1px}
+.wm{color:var(--tx3);font-family:'JetBrains Mono';font-size:9px}
+.wt{display:inline-block;font-size:8px;padding:1px 5px;border-radius:3px;margin-top:3px;margin-right:2px}
+.wt.ai{border:1px solid rgba(129,140,248,0.3);color:var(--ac);background:rgba(129,140,248,0.08)}
+.wt.sa{border:1px solid rgba(52,211,153,0.3);color:var(--em);background:rgba(52,211,153,0.08)}
+.bg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+canvas.ch{display:block;width:100%;height:140px}
+.data-status{font-size:10px;color:var(--tx3);padding:4px 0;font-family:'JetBrains Mono'}
+.data-status.ok{color:var(--em)}.data-status.err{color:#fb7185}
+.photo-thumb{border-radius:6px;border:1px solid var(--bd);cursor:pointer;overflow:hidden;position:relative;background:var(--sf2);transition:all .2s}
+.photo-thumb:hover{border-color:var(--ms);transform:scale(1.02)}
+.photo-thumb img{width:100%;height:140px;object-fit:cover;display:block}
+.photo-thumb .photo-label{padding:5px 7px;font-size:9px;color:var(--tx3);font-family:'JetBrains Mono'}
+.photo-thumb .photo-cam{position:absolute;top:5px;left:5px;font-size:8px;padding:1px 5px;border-radius:3px;background:rgba(5,5,9,0.8);color:var(--ms2);font-family:'Space Grotesk';backdrop-filter:blur(4px)}
+.cam-tab{padding:3px 10px;border-radius:5px;font-size:10px;border:1px solid var(--bd);background:var(--sf2);color:var(--tx3);cursor:pointer;font-family:'Space Grotesk';transition:all .15s}
+.cam-tab.on{border-color:var(--cy);color:var(--cy);background:rgba(34,211,238,0.08)}
+.cam-tab:hover{border-color:var(--cy)}
+.photo-loading{display:flex;align-items:center;justify-content:center;padding:30px;color:var(--tx3);font-size:12px;gap:8px}
+.ai-legend{display:inline-flex;align-items:center;gap:4px;font-size:9px;color:var(--ac);font-family:'JetBrains Mono';margin-left:8px;padding:2px 6px;border-radius:4px;border:1px solid rgba(129,140,248,0.2);background:rgba(129,140,248,0.05)}
+.ai-legend .ai-dot{width:6px;height:6px;border-radius:50%;background:var(--ac);box-shadow:0 0 6px rgba(129,140,248,0.5)}
+@media(max-width:900px){.mg,.bg{grid-template-columns:1fr}.top{grid-template-columns:repeat(3,1fr)}#gc,#jezeroMap{height:360px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div><div class="logo"><div class="logo-d"></div>PersExplorer<span class="bdg">NASA/JPL Mars 2020</span></div></div>
+<div class="hs"><span>Sol: <strong id="hS">—</strong></span><span>Traverse: <strong id="hD">—</strong></span><span>Points: <strong id="hP">—</strong></span></div></header>
+<div class="top" id="tp"></div>
+<div class="mg">
+<div class="cd">
+<div class="ct"><span class="dt" style="background:var(--ms2)"></span>Mars — Perseverance rover traverse<span class="ai-legend"><span class="ai-dot"></span>AI drive (Claude)</span></div>
+<div class="tab-row">
+<button class="tab on" id="tab3d" onclick="setTab('3d')">3D Globe</button>
+<button class="tab" id="tab2d" onclick="setTab('2d')">Jezero detail (2D)</button>
+</div>
+<div class="gw">
+<div id="gc"><div class="ld" id="ldE"><div class="sp"></div>Loading...<div style="font-size:11px;color:var(--tx3)" id="ldS"></div></div></div>
+<canvas id="jezeroMap" height="500"></canvas>
+<div class="ghud" id="ghud2d" style="display:none">
+<button class="gb" onclick="map2dZoom=1;map2dPanX=0;map2dPanY=0;drawJezero2D()">Reset view</button>
+<button class="gb" onclick="map2dZoom=Math.min(15,map2dZoom*1.5);drawJezero2D()">Zoom +</button>
+<button class="gb" onclick="map2dZoom=Math.max(1,map2dZoom/1.5);if(map2dZoom<=1){map2dPanX=0;map2dPanY=0;map2dZoom=1}drawJezero2D()">Zoom −</button>
+</div>
+<div class="ghud" id="ghud3d">
+<button class="gb on" id="bR" onclick="tR()">Auto-rotate</button>
+<button class="gb" onclick="fJ()">Fly to Jezero</button>
+<button class="gb" onclick="rV()">Reset</button>
+<button class="gb on" id="bM" onclick="tM()">Markers</button>
+</div>
+<div class="gi" id="gI">Drag to explore Mars</div>
+</div>
+<div class="data-status" id="dataStatus">Loading rover data...</div>
+<div class="sr"><span class="sll">Sol 0</span><input type="range" class="sol" id="sS" min="0" max="1800" value="1800" step="1"><span class="sll" style="text-align:right" id="sO">Sol 1800</span></div>
+</div>
+<div class="cd" style="display:flex;flex-direction:column"><div class="ct"><span class="dt" style="background:var(--cy)"></span>Waypoints (real NASA data)</div><div class="wl" id="wl"></div></div>
+</div>
+<div class="bg">
+<div class="cd"><div class="ct"><span class="dt" style="background:var(--em)"></span>Elevation profile</div><canvas class="ch" id="eC"></canvas></div>
+<div class="cd"><div class="ct"><span class="dt" style="background:var(--am)"></span>Drive distance per sol</div><canvas class="ch" id="dC"></canvas></div>
+<div class="cd"><div class="ct"><span class="dt" style="background:var(--ac)"></span>Cumulative distance</div><canvas class="ch" id="cC"></canvas></div>
+</div>
+<div class="cd" id="photoPanel" style="margin-top:12px">
+<div class="ct"><span class="dt" style="background:var(--cy)"></span>Mars surface photos <span id="photoSol" style="color:var(--ms2);font-size:10px;font-weight:400;text-transform:none;letter-spacing:0"></span></div>
+<div id="photoCamTabs" style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap"></div>
+<div id="photoGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;min-height:60px">
+<div style="font-size:12px;color:var(--tx3);padding:20px 0;text-align:center">Click a waypoint to load photos for that sol</div>
+</div>
+<div id="photoStatus" style="font-size:10px;color:var(--tx3);font-family:'JetBrains Mono';margin-top:6px"></div>
+</div>
+<div id="photoLightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:1000;cursor:zoom-out;align-items:center;justify-content:center;flex-direction:column">
+<img id="lbImg" style="max-width:92vw;max-height:82vh;border-radius:8px;object-fit:contain">
+<div id="lbInfo" style="color:var(--tx2);font-family:'Space Grotesk';font-size:13px;margin-top:10px;text-align:center"></div>
+<div style="position:absolute;top:16px;right:20px;color:var(--tx3);font-size:24px;cursor:pointer" onclick="closeLightbox()">✕</div>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+
+// AI drive sols — Anthropic Claude planned Perseverance's first autonomous drives
+const AI_SOLS=[1707,1709];
+const AI_SOL_SET=new Set(AI_SOLS);
+function isAIDrive(sol){return AI_SOL_SET.has(sol)}
+// Approximate AI sol range for path highlighting
+function solInAIRange(sol){return sol>=1707&&sol<=1709}
+
+// Real data storage
+let realPoints=[];
+let realPathCoords=[];
+let maxSolData=0;
+let maxSol=1800;
+let selIdx=-1;
+let currentTab='3d';
+
+// ========== ROBUST DATA LOADING ==========
+async function loadData(){
+$('ldS').textContent='Loading rover data...';
+try{
+const [ptRes,pathRes]=await Promise.all([
+fetch('rover_points_full.geojson').then(r=>{
+  if(!r.ok)throw new Error('Points fetch failed: HTTP '+r.status);
+  return r.text();
+}).catch(e=>({error:e.message})),
+fetch('rover_path_full.geojson').then(r=>{
+  if(!r.ok)throw new Error('Path fetch failed: HTTP '+r.status);
+  return r.text();
+}).catch(e=>({error:e.message}))
+]);
+
+let statusParts=[];
+
+// --- Parse POINTS ---
+if(typeof ptRes==='string'){
+try{
+  const ptJSON=JSON.parse(ptRes);
+  if(ptJSON&&ptJSON.features&&Array.isArray(ptJSON.features)){
+    const totalFeatures=ptJSON.features.length;
+    const withGeom=ptJSON.features.filter(f=>f&&f.geometry&&f.geometry.coordinates);
+    realPoints=withGeom
+      .map(f=>{
+        const coords=f.geometry.coordinates;
+        const props=f.properties||{};
+        return{
+          lon:parseFloat(props.lon)||coords[0],
+          lat:parseFloat(props.lat)||coords[1],
+          elev:parseFloat(props.elev_geoid)||coords[2]||-2500,
+          sol:parseInt(props.sol)||0,
+          dist:parseFloat(props.dist_km)||0,
+          note:props.Note||'',
+          rmc:props.RMC||'',
+          date:props.date||'',
+          isPano:props.isPanoramic||false
+        };
+      })
+      .filter(p=>!isNaN(p.lon)&&!isNaN(p.lat)&&p.lon!==0&&p.lat!==0)
+      .sort((a,b)=>a.sol-b.sol);
+    maxSolData=realPoints.length?Math.max(...realPoints.map(p=>p.sol)):0;
+    $('sS').max=maxSolData;
+    maxSol=maxSolData;
+    $('sS').value=maxSolData;
+    $('sO').textContent='Sol '+maxSolData;
+    statusParts.push(realPoints.length+'/'+totalFeatures+' waypoints (Sol 0–'+maxSolData+')');
+  }else{
+    statusParts.push('Points: unexpected structure');
+  }
+}catch(parseErr){
+  statusParts.push('Points parse error: '+parseErr.message.substring(0,80));
+}
+}else if(ptRes&&ptRes.error){
+statusParts.push('Points: '+ptRes.error);
+}else{
+statusParts.push('Points: no response');
+}
+
+// --- Parse PATH (robust: handle multiple geometry structures) ---
+if(typeof pathRes==='string'){
+try{
+  const pathJSON=JSON.parse(pathRes);
+  if(pathJSON&&pathJSON.features&&Array.isArray(pathJSON.features)){
+    // Collect ALL coordinates from ALL features
+    let allCoords=[];
+    let featureCount=pathJSON.features.length;
+    pathJSON.features.forEach((f,idx)=>{
+      if(!f||!f.geometry||!f.geometry.coordinates)return;
+      const geom=f.geometry;
+      if(geom.type==='LineString'){
+        // LineString: coordinates is [[lon,lat], [lon,lat], ...]
+        if(Array.isArray(geom.coordinates)){
+          for(let i=0;i<geom.coordinates.length;i++){
+            allCoords.push(geom.coordinates[i]);
+          }
+        }
+      }else if(geom.type==='MultiLineString'){
+        geom.coordinates.forEach(line=>{
+          for(let i=0;i<line.length;i++)allCoords.push(line[i]);
+        });
+      }
+      // Intentionally skip Point geometries in path file
+    });
+    // Validate coordinates are [lon, lat] numbers
+    realPathCoords=allCoords.filter(c=>
+      Array.isArray(c)&&c.length>=2&&!isNaN(c[0])&&!isNaN(c[1])
+    );
+    // Auto-detect if path needs reversal: compare first path coord with
+    // first waypoint (Sol 0) — if path start is closer to last waypoint,
+    // the path is reversed and needs flipping
+    if(realPathCoords.length>1&&realPoints.length>1){
+      const p0=realPathCoords[0];
+      const pN=realPathCoords[realPathCoords.length-1];
+      const wp0=realPoints[0]; // Sol 0 = landing
+      const d0=Math.hypot(p0[0]-wp0.lon,p0[1]-wp0.lat);
+      const dN=Math.hypot(pN[0]-wp0.lon,pN[1]-wp0.lat);
+      if(d0>dN){
+        // Path starts far from landing → it's reversed → flip it
+        realPathCoords.reverse();
+      }
+    }
+    // Mark that we have real path data (from dedicated path file, not waypoints)
+    window._hasRealPathData=true;
+    statusParts.push(realPathCoords.length+' path coords ('+featureCount+' features)');
+  }else if(pathJSON&&pathJSON.type==='LineString'&&pathJSON.coordinates){
+    realPathCoords=pathJSON.coordinates.filter(c=>
+      Array.isArray(c)&&c.length>=2&&!isNaN(c[0])&&!isNaN(c[1])
+    );
+    window._hasRealPathData=true;
+    statusParts.push(realPathCoords.length+' path coords (bare LineString)');
+  }else{
+    statusParts.push('Path: unexpected structure (type='+(pathJSON?pathJSON.type:'null')+', keys='+Object.keys(pathJSON||{}).join(',')+')');
+  }
+}catch(parseErr){
+  statusParts.push('Path parse error: '+parseErr.message.substring(0,80));
+}
+}else if(pathRes&&pathRes.error){
+statusParts.push('Path: '+pathRes.error);
+}else{
+statusParts.push('Path: no response');
+}
+
+// Update status
+$('dataStatus').textContent=statusParts.join(' | ');
+$('dataStatus').className='data-status '+(realPoints.length>0?'ok':'err');
+
+}catch(e){
+$('dataStatus').textContent='Load error: '+e.message;
+$('dataStatus').className='data-status err';
+console.error('loadData error:',e);
+}
+uS();rWL();buildGlobe();
+// Delayed chart draw to ensure canvas has correct dimensions
+setTimeout(()=>{dE();dD();dCC()},100);
+}
+
+// ========== THREE.JS GLOBE ==========
+let marsMesh,mkG,pG,sc,cam,ren;
+let aRot=true,sMk=true;
+let drg=false,pm={x:0,y:0},rX=0.3,rY=0,tX=0.3,tY=0,zm=3,tZ=3;
+
+function buildGlobe(){
+const gc=$('gc');
+sc=new THREE.Scene();
+cam=new THREE.PerspectiveCamera(45,gc.clientWidth/gc.clientHeight,0.1,1000);
+cam.position.z=3;
+ren=new THREE.WebGLRenderer({antialias:true,alpha:true});
+ren.setSize(gc.clientWidth,gc.clientHeight);
+ren.setPixelRatio(Math.min(devicePixelRatio,2));
+gc.appendChild(ren.domElement);
+
+sc.add(new THREE.AmbientLight(0x666666,0.6));
+const dl=new THREE.DirectionalLight(0xfff0dd,1.5);dl.position.set(5,2,5);sc.add(dl);
+
+// Stars
+const sG=new THREE.BufferGeometry(),sA=new Float32Array(6000);
+for(let i=0;i<6000;i++)sA[i]=(Math.random()-.5)*150;
+sG.setAttribute('position',new THREE.BufferAttribute(sA,3));
+sc.add(new THREE.Points(sG,new THREE.PointsMaterial({color:0xffffff,size:0.035,sizeAttenuation:true})));
+
+// Mars
+const marsGeo=new THREE.SphereGeometry(1,256,256);
+const loader=new THREE.TextureLoader();
+$('ldS').textContent='Loading Mars texture...';
+
+loader.load('mars.jpg',tex=>{
+tex.anisotropy=ren.capabilities.getMaxAnisotropy();
+marsMesh=new THREE.Mesh(marsGeo,new THREE.MeshPhongMaterial({map:tex,bumpScale:0,specular:new THREE.Color(0x111111),shininess:5}));
+marsMesh.rotation.y=-Math.PI*0.5;
+sc.add(marsMesh);
+// Atmosphere
+const atMat=new THREE.ShaderMaterial({
+vertexShader:'varying vec3 vN;void main(){vN=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+fragmentShader:'varying vec3 vN;void main(){float i=pow(0.6-dot(vN,vec3(0,0,1)),2.0);gl_FragColor=vec4(0.9,0.55,0.3,1)*i*0.3;}',
+side:THREE.BackSide,blending:THREE.AdditiveBlending,transparent:true
+});
+sc.add(new THREE.Mesh(new THREE.SphereGeometry(1.02,64,64),atMat));
+buildMarkers();
+buildPath3D();
+$('ldE').style.display='none';
+},undefined,()=>{
+// Fallback — no texture
+marsMesh=new THREE.Mesh(marsGeo,new THREE.MeshPhongMaterial({color:0xc45a2c}));
+sc.add(marsMesh);buildMarkers();buildPath3D();$('ldE').style.display='none';
+});
+
+// Groups
+mkG=new THREE.Group();pG=new THREE.Group();sc.add(mkG);sc.add(pG);
+
+// Controls
+const el=ren.domElement;
+el.addEventListener('pointerdown',e=>{drg=true;aRot=false;$('bR').classList.remove('on');pm={x:e.clientX,y:e.clientY};el.setPointerCapture(e.pointerId)});
+el.addEventListener('pointerup',e=>{drg=false;el.releasePointerCapture(e.pointerId)});
+el.addEventListener('pointermove',e=>{if(!drg)return;tY+=(e.clientX-pm.x)*.005;tX=Math.max(-1.5,Math.min(1.5,tX+(e.clientY-pm.y)*.005));pm={x:e.clientX,y:e.clientY}});
+el.addEventListener('wheel',e=>{e.preventDefault();tZ=Math.max(1.3,Math.min(8,tZ+e.deltaY*.002))},{passive:false});
+let ts=null,tsd=null;
+el.addEventListener('touchstart',e=>{if(e.touches.length===1){ts={x:e.touches[0].clientX,y:e.touches[0].clientY};aRot=false;$('bR').classList.remove('on')}if(e.touches.length===2)tsd=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY)},{passive:true});
+el.addEventListener('touchmove',e=>{if(ts&&e.touches.length===1){tY+=(e.touches[0].clientX-ts.x)*.005;tX=Math.max(-1.5,Math.min(1.5,tX+(e.touches[0].clientY-ts.y)*.005));ts={x:e.touches[0].clientX,y:e.touches[0].clientY}}if(e.touches.length===2&&tsd){const nd=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);tZ=Math.max(1.3,Math.min(8,tZ-(nd-tsd)*.01));tsd=nd}},{passive:true});
+el.addEventListener('touchend',()=>{ts=null;tsd=null});
+
+// Click on markers
+const rc=new THREE.Raycaster(),mp=new THREE.Vector2();
+el.addEventListener('click',e=>{
+const r=el.getBoundingClientRect();mp.x=((e.clientX-r.left)/r.width)*2-1;mp.y=-((e.clientY-r.top)/r.height)*2+1;
+rc.setFromCamera(mp,cam);
+const mh=rc.intersectObjects(mkG.children);if(mh.length&&mh[0].object.userData.hl){fJ();return}
+});
+
+animate();
+}
+
+function ll2v(la,lo,r){const p=(90-la)*Math.PI/180,t=(lo+180)*Math.PI/180;return new THREE.Vector3(-r*Math.sin(p)*Math.cos(t),r*Math.cos(p),r*Math.sin(p)*Math.sin(t))}
+
+function buildMarkers(){
+while(mkG.children.length)mkG.remove(mkG.children[0]);
+if(!sMk)return;
+const LM=[{n:"Olympus Mons",la:18.65,lo:-133.8},{n:"Valles Marineris",la:-14,lo:-59},{n:"Hellas Basin",la:-42.4,lo:70.5},{n:"Gale Crater",la:-5.4,lo:137.8},{n:"Jezero Crater",la:18.38,lo:77.58,hl:1},{n:"Elysium Mons",la:25,lo:147},{n:"Utopia Planitia",la:46,lo:110}];
+LM.forEach(lm=>{
+const pos=ll2v(lm.la,lm.lo,1.008);
+if(lm.hl){
+const dot=new THREE.Mesh(new THREE.SphereGeometry(0.012,16,16),new THREE.MeshBasicMaterial({color:0x22d3ee}));
+dot.position.copy(pos);dot.userData={hl:1};mkG.add(dot);
+[0.022,0.036].forEach((r,i)=>{
+const rg=new THREE.Mesh(new THREE.RingGeometry(r,r+0.005,32),new THREE.MeshBasicMaterial({color:0x22d3ee,transparent:true,opacity:i?0.15:0.45,side:THREE.DoubleSide}));
+rg.position.copy(pos);rg.lookAt(0,0,0);rg.userData={pls:1,i};mkG.add(rg);
+});
+}else{
+const dot=new THREE.Mesh(new THREE.SphereGeometry(0.004,8,8),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.35}));
+dot.position.copy(pos);mkG.add(dot);
+}
+});
+}
+
+function buildPath3D(){
+while(pG.children.length)pG.remove(pG.children[0]);
+
+// Use real path data if available (more coords than waypoints = real path data)
+let coords=window._hasRealPathData&&realPathCoords.length>0?realPathCoords:null;
+if(!coords&&realPoints.length>0){
+coords=realPoints.filter(p=>p.sol<=maxSol).map(p=>[p.lon,p.lat]);
+}
+if(!coords||coords.length<2)return;
+
+// Filter by maxSol if using full path
+let useCoords;
+if(window._hasRealPathData&&coords===realPathCoords){
+const ratio=maxSol/Math.max(maxSolData,1);
+const endIdx=Math.max(2,Math.floor(coords.length*ratio));
+useCoords=coords.slice(0,endIdx);
+}else{
+useCoords=coords;
+}
+
+// Sample every Nth point for performance
+const step=Math.max(1,Math.floor(useCoords.length/500));
+const sampled=[];
+for(let i=0;i<useCoords.length;i+=step)sampled.push(useCoords[i]);
+if(sampled[sampled.length-1]!==useCoords[useCoords.length-1])sampled.push(useCoords[useCoords.length-1]);
+
+if(sampled.length<2)return;
+
+try{
+const pts=sampled.map(c=>ll2v(c[1],c[0],1.01));
+const crv=new THREE.CatmullRomCurve3(pts);
+// Main traverse line
+pG.add(new THREE.Mesh(new THREE.TubeGeometry(crv,sampled.length*2,0.002,8,false),new THREE.MeshBasicMaterial({color:0xe8934a,transparent:true,opacity:0.9})));
+// Glow
+pG.add(new THREE.Mesh(new THREE.TubeGeometry(crv,sampled.length*2,0.007,8,false),new THREE.MeshBasicMaterial({color:0xe8934a,transparent:true,opacity:0.1})));
+
+// AI drive segments highlight (sols 1707-1709)
+if(maxSol>=1707){
+const aiPts=realPoints.filter(p=>p.sol>=1707&&p.sol<=1709);
+if(aiPts.length>=2){
+  const aiVecs=aiPts.map(p=>ll2v(p.lat,p.lon,1.012));
+  const aiCrv=new THREE.CatmullRomCurve3(aiVecs);
+  pG.add(new THREE.Mesh(new THREE.TubeGeometry(aiCrv,aiPts.length*4,0.004,8,false),new THREE.MeshBasicMaterial({color:0x818cf8,transparent:true,opacity:0.95})));
+  // AI glow
+  pG.add(new THREE.Mesh(new THREE.TubeGeometry(aiCrv,aiPts.length*4,0.012,8,false),new THREE.MeshBasicMaterial({color:0x818cf8,transparent:true,opacity:0.15})));
+}
+}
+
+// Current position marker
+const lastPt=pts[pts.length-1];
+const curDot=new THREE.Mesh(new THREE.SphereGeometry(0.006,12,12),new THREE.MeshBasicMaterial({color:0x22d3ee}));
+curDot.position.copy(lastPt);pG.add(curDot);
+}catch(e){console.error('Path build error:',e)}
+}
+
+function fJ(){tX=18.38*Math.PI/180;tY=-(77.58+90)*Math.PI/180;tZ=1.8;$('gI').textContent='Jezero Crater'}
+window.fJ=fJ;
+function rV(){tX=0.3;tY=0;tZ=3;$('gI').textContent='Drag to explore Mars'}
+window.rV=rV;
+function tR(){aRot=!aRot;$('bR').classList.toggle('on',aRot)}
+window.tR=tR;
+function tM(){sMk=!sMk;$('bM').classList.toggle('on',sMk);buildMarkers()}
+window.tM=tM;
+
+let t=0;
+function animate(){
+requestAnimationFrame(animate);t+=.01;
+if(aRot)tY+=.0015;
+rX+=(tX-rX)*.06;rY+=(tY-rY)*.06;zm+=(tZ-zm)*.06;
+if(marsMesh){marsMesh.rotation.x=rX;marsMesh.rotation.y=rY}
+if(mkG){mkG.rotation.x=rX;mkG.rotation.y=rY}
+if(pG){pG.rotation.x=rX;pG.rotation.y=rY}
+cam.position.z=zm;
+if(mkG)mkG.children.forEach(c=>{if(c.userData.pls){const s=1+Math.sin(t*3+c.userData.i)*.2;c.scale.set(s,s,s)}});
+if(ren)ren.render(sc,cam);
+}
+
+// Tab switching with smooth zoom transition
+let _tabBusy=false;
+function setTab(tab){
+if(tab===currentTab||_tabBusy)return;
+_tabBusy=true;
+$('tab3d').classList.toggle('on',tab==='3d');
+$('tab2d').classList.toggle('on',tab==='2d');
+
+const gc=$('gc'),jm=$('jezeroMap');
+
+if(tab==='2d'){
+// 3D → 2D: fly to Jezero, zoom-crossfade
+fJ();
+setTimeout(()=>{
+  drawJezero2D();
+  jm.style.display='block';
+  jm.style.opacity='0';
+  jm.style.transform='scale(0.6)';
+  jm.style.transition='opacity 0.6s ease-out, transform 0.6s ease-out';
+  $('ghud2d').style.display='flex';$('ghud2d').style.opacity='0';
+  $('ghud2d').style.transition='opacity 0.4s ease 0.3s';
+  gc.style.transition='opacity 0.5s ease-out, transform 0.5s ease-out';
+  gc.style.opacity='0';gc.style.transform='scale(1.5)';
+  requestAnimationFrame(()=>{requestAnimationFrame(()=>{
+    jm.style.opacity='1';jm.style.transform='scale(1)';
+    $('ghud2d').style.opacity='1';
+  })});
+  setTimeout(()=>{
+    currentTab='2d';
+    gc.style.display='none';$('ghud3d').style.display='none';
+    gc.style.opacity='1';gc.style.transform='';gc.style.transition='';
+    jm.style.transition='';jm.style.transform='';
+    $('ghud2d').style.transition='';$('ghud2d').style.opacity='1';
+    _tabBusy=false;
+  },700);
+},550);
+}else{
+// 2D → 3D: zoom out 2D, fade in 3D
+jm.style.transition='opacity 0.5s ease-in, transform 0.5s ease-in';
+$('ghud2d').style.transition='opacity 0.2s ease';
+$('ghud2d').style.opacity='0';
+jm.style.opacity='0';jm.style.transform='scale(0.7)';
+gc.style.display='block';gc.style.opacity='0';gc.style.transform='scale(1.3)';
+gc.style.transition='opacity 0.5s ease-out 0.15s, transform 0.5s ease-out 0.15s';
+$('ghud3d').style.display='flex';
+requestAnimationFrame(()=>{requestAnimationFrame(()=>{
+  gc.style.opacity='1';gc.style.transform='scale(1)';
+})});
+setTimeout(()=>{
+  currentTab='3d';
+  jm.style.display='none';$('ghud2d').style.display='none';
+  jm.style.opacity='1';jm.style.transform='';jm.style.transition='';
+  gc.style.transition='';gc.style.transform='';
+  $('ghud2d').style.transition='';$('ghud2d').style.opacity='1';
+  _tabBusy=false;
+},600);
+}
+}
+window.setTab=setTab;
+
+// 2D map zoom/pan state
+let map2dZoom=1;
+let map2dPanX=0,map2dPanY=0;
+let map2dDrag=false,map2dLastX=0,map2dLastY=0;
+
+// ========== 2D JEZERO DETAIL MAP ==========
+function drawJezero2D(){
+const c=$('jezeroMap');
+const rect=c.parentElement.getBoundingClientRect();
+const dpr=devicePixelRatio||1;
+c.width=rect.width*dpr;c.height=500*dpr;
+c.style.width=rect.width+'px';c.style.height='500px';
+const cx=c.getContext('2d');
+cx.setTransform(dpr,0,0,dpr,0,0);
+const w=rect.width,h=500;
+cx.clearRect(0,0,w,h);
+
+// Determine bounds from real data
+let pts=realPoints.filter(p=>p.sol<=maxSol);
+let coords=[];
+if(window._hasRealPathData&&realPathCoords.length>0){
+const ratio=maxSol/Math.max(maxSolData,1);
+const endIdx=Math.max(2,Math.floor(realPathCoords.length*ratio));
+coords=realPathCoords.slice(0,endIdx);
+}else if(pts.length>0){
+coords=pts.map(p=>[p.lon,p.lat]);
+}
+if(coords.length<1)return;
+
+// Compute bounds from ALL data for stable viewport
+const allPts=realPoints;
+const allCoords=allPts.length>0?allPts.map(p=>[p.lon,p.lat]):coords;
+const allLon=allCoords.map(c=>c[0]);
+const allLat=allCoords.map(c=>c[1]);
+const minLon=Math.min(...allLon),maxLon=Math.max(...allLon);
+const minLat=Math.min(...allLat),maxLat=Math.max(...allLat);
+const padDeg=0.003;
+const bMinLon=minLon-padDeg,bMaxLon=maxLon+padDeg;
+const bMinLat=minLat-padDeg,bMaxLat=maxLat+padDeg;
+const aspect=w/h;
+let lonRange=bMaxLon-bMinLon;
+let latRange=bMaxLat-bMinLat;
+if(lonRange/latRange>aspect){latRange=lonRange/aspect}else{lonRange=latRange*aspect}
+const cLon=(bMinLon+bMaxLon)/2,cLat=(bMinLat+bMaxLat)/2;
+
+// Apply zoom and pan
+const zLonR=lonRange/map2dZoom,zLatR=latRange/map2dZoom;
+const panLon=map2dPanX*lonRange/w,panLat=map2dPanY*latRange/h;
+const fMinLon=cLon-zLonR/2+panLon,fMaxLon=cLon+zLonR/2+panLon;
+const fMinLat=cLat-zLatR/2-panLat,fMaxLat=cLat+zLatR/2-panLat;
+
+function toXY(lon,lat){return{x:(lon-fMinLon)/(fMaxLon-fMinLon)*w,y:(1-(lat-fMinLat)/(fMaxLat-fMinLat))*h}}
+
+// Background — elevation-based procedural Mars terrain
+cx.fillStyle='#0e0804';cx.fillRect(0,0,w,h);
+{
+// Build elevation grid from real waypoint data for terrain coloring
+const elevMap=new Map();
+allPts.forEach(p=>{
+const gx=Math.floor((p.lon-fMinLon)/(fMaxLon-fMinLon)*40);
+const gy=Math.floor((1-(p.lat-fMinLat)/(fMaxLat-fMinLat))*30);
+const key=gx+','+gy;
+if(!elevMap.has(key))elevMap.set(key,p.elev);
+});
+// Get elevation range for color mapping
+const elevVals=allPts.map(p=>p.elev);
+const eMin=Math.min(...elevVals),eRange=Math.max(...elevVals)-eMin||1;
+
+const tileSize=4;
+for(let py=0;py<h;py+=tileSize){for(let px=0;px<w;px+=tileSize){
+// Multi-octave noise for natural terrain
+const nx=px/w,ny=py/h;
+const n1=Math.sin(nx*18.7+ny*12.3)*0.25;
+const n2=Math.sin(nx*37.1-ny*23.7)*0.12;
+const n3=Math.sin(nx*7.3+ny*5.1)*0.35;
+const n4=Math.sin((nx*ny)*50+nx*3.1)*0.08;
+const noise=n1+n2+n3+n4;
+
+// Check if near any waypoint for elevation-based coloring
+const gx=Math.floor(nx*40),gy=Math.floor(ny*30);
+let elevFactor=0.5;
+for(let dx=-2;dx<=2;dx++){for(let dy=-2;dy<=2;dy++){
+  const k=(gx+dx)+','+(gy+dy);
+  if(elevMap.has(k)){
+    const d=Math.hypot(dx,dy);
+    const w2=Math.max(0,1-d/3);
+    elevFactor=elevFactor*(1-w2)+((elevMap.get(k)-eMin)/eRange)*w2;
+  }
+}}
+
+const base=0.3+noise*0.2+elevFactor*0.25;
+// Mars color palette — browns, ochres, with subtle blue-grey in low areas
+const rr=Math.floor(Math.max(0,Math.min(255, 45+base*80+elevFactor*15)));
+const gg=Math.floor(Math.max(0,Math.min(255, 22+base*42+elevFactor*8)));
+const bb=Math.floor(Math.max(0,Math.min(255, 12+base*22+(1-elevFactor)*6)));
+cx.fillStyle=`rgb(${rr},${gg},${bb})`;
+cx.fillRect(px,py,tileSize,tileSize);
+}}
+
+// Subtle crater-like depressions
+[{x:0.25,y:0.65,r:80},{x:0.72,y:0.25,r:50},{x:0.12,y:0.35,r:35},{x:0.85,y:0.7,r:45}].forEach(cr=>{
+const grd=cx.createRadialGradient(cr.x*w,cr.y*h,cr.r*0.2,cr.x*w,cr.y*h,cr.r);
+grd.addColorStop(0,'rgba(20,10,5,0.12)');
+grd.addColorStop(0.7,'rgba(40,20,10,0.06)');
+grd.addColorStop(1,'rgba(0,0,0,0)');
+cx.fillStyle=grd;cx.fillRect(0,0,w,h);
+});
+
+// Vignette for depth
+const vgr=cx.createRadialGradient(w/2,h/2,Math.min(w,h)*0.25,w/2,h/2,Math.max(w,h)*0.65);
+vgr.addColorStop(0,'rgba(5,5,9,0)');
+vgr.addColorStop(1,'rgba(5,5,9,0.35)');
+cx.fillStyle=vgr;cx.fillRect(0,0,w,h);
+}
+
+// Grid
+cx.strokeStyle='rgba(255,255,255,0.04)';cx.lineWidth=0.5;
+for(let i=0;i<=8;i++){
+const x=w*i/8,y=h*i/8;
+cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,h);cx.stroke();
+cx.beginPath();cx.moveTo(0,y);cx.lineTo(w,y);cx.stroke();
+}
+
+// Path glow
+if(coords.length>1){
+cx.beginPath();
+coords.forEach((c,i)=>{const p=toXY(c[0],c[1]);i===0?cx.moveTo(p.x,p.y):cx.lineTo(p.x,p.y)});
+cx.strokeStyle='rgba(232,147,74,0.12)';cx.lineWidth=8;cx.stroke();
+}
+
+// Path line
+if(coords.length>1){
+cx.beginPath();
+coords.forEach((c,i)=>{const p=toXY(c[0],c[1]);i===0?cx.moveTo(p.x,p.y):cx.lineTo(p.x,p.y)});
+cx.strokeStyle='rgba(232,147,74,0.75)';cx.lineWidth=2;cx.stroke();
+}
+
+// AI drive path overlay (sols 1707-1709) — purple highlight
+if(maxSol>=1707){
+const aiPts=pts.filter(p=>p.sol>=1707&&p.sol<=1709);
+if(aiPts.length>=2){
+  // Glow
+  cx.beginPath();
+  aiPts.forEach((pt,i)=>{const p=toXY(pt.lon,pt.lat);i===0?cx.moveTo(p.x,p.y):cx.lineTo(p.x,p.y)});
+  cx.strokeStyle='rgba(129,140,248,0.25)';cx.lineWidth=10;cx.stroke();
+  // Line
+  cx.beginPath();
+  aiPts.forEach((pt,i)=>{const p=toXY(pt.lon,pt.lat);i===0?cx.moveTo(p.x,p.y):cx.lineTo(p.x,p.y)});
+  cx.strokeStyle='rgba(129,140,248,0.9)';cx.lineWidth=3;cx.stroke();
+  // Label
+  const midPt=aiPts[Math.floor(aiPts.length/2)];
+  const mp=toXY(midPt.lon,midPt.lat);
+  cx.font='600 10px Space Grotesk';cx.fillStyle='#818cf8';cx.textAlign='left';
+  cx.fillText('AI Drive (Claude)',mp.x+10,mp.y-6);
+  cx.font='400 9px JetBrains Mono';cx.fillStyle='rgba(129,140,248,0.7)';
+  cx.fillText('Sols 1707–1709 · 455.9m',mp.x+10,mp.y+7);
+}
+}
+
+// Waypoint dots from real data
+const wStep=Math.max(1,Math.floor(pts.length/100));
+for(let i=0;i<pts.length;i+=wStep){
+const pt=pts[i];
+const p=toXY(pt.lon,pt.lat);
+const isSel=i===selIdx;
+const isAI=isAIDrive(pt.sol);
+cx.beginPath();cx.arc(p.x,p.y,isSel?5:isAI?3:2,0,Math.PI*2);
+cx.fillStyle=isSel?'#22d3ee':isAI?'#818cf8':'rgba(232,147,74,0.6)';cx.fill();
+if(isSel){
+cx.strokeStyle='#fff';cx.lineWidth=2;cx.stroke();
+cx.font='600 11px Space Grotesk';cx.fillStyle='#fff';cx.textAlign='left';
+cx.fillText(`Sol ${pt.sol}`,p.x+10,p.y-8);
+cx.font='400 10px JetBrains Mono';cx.fillStyle='#94a3b8';
+cx.fillText(`${pt.elev.toFixed(0)}m | ${pt.dist.toFixed(2)}km`,p.x+10,p.y+5);
+}
+}
+
+// Start marker
+if(pts.length>0){
+const s=toXY(pts[0].lon,pts[0].lat);
+cx.beginPath();cx.arc(s.x,s.y,6,0,Math.PI*2);cx.strokeStyle='#22d3ee';cx.lineWidth=2;cx.stroke();
+cx.beginPath();cx.arc(s.x,s.y,2,0,Math.PI*2);cx.fillStyle='#22d3ee';cx.fill();
+cx.font='600 10px Space Grotesk';cx.fillStyle='#22d3ee';cx.textAlign='left';
+cx.fillText('Landing (Sol 0)',s.x+10,s.y+4);
+}
+
+// End marker (current rover position)
+if(pts.length>1){
+const lastPt=pts[pts.length-1];
+const e=toXY(lastPt.lon,lastPt.lat);
+// Pulsing outer ring
+cx.beginPath();cx.arc(e.x,e.y,8,0,Math.PI*2);cx.strokeStyle='rgba(232,147,74,0.3)';cx.lineWidth=2;cx.stroke();
+cx.beginPath();cx.arc(e.x,e.y,6,0,Math.PI*2);cx.strokeStyle='#e8934a';cx.lineWidth=2;cx.stroke();
+cx.beginPath();cx.arc(e.x,e.y,3,0,Math.PI*2);cx.fillStyle='#e8934a';cx.fill();
+// Direction arrow from second-to-last to last point
+if(pts.length>=2){
+  const prevPt=pts[pts.length-2];
+  const pv=toXY(prevPt.lon,prevPt.lat);
+  const dx=e.x-pv.x,dy=e.y-pv.y;
+  const len=Math.hypot(dx,dy);
+  if(len>2){
+    const nx=dx/len,ny=dy/len;
+    cx.beginPath();
+    cx.moveTo(e.x+nx*14,e.y+ny*14);
+    cx.lineTo(e.x+nx*8-ny*4,e.y+ny*8+nx*4);
+    cx.lineTo(e.x+nx*8+ny*4,e.y+ny*8-nx*4);
+    cx.closePath();cx.fillStyle='#e8934a';cx.fill();
+  }
+}
+// Label — position smartly
+const labelX=e.x<w/2?e.x+14:e.x-14;
+const labelAlign=e.x<w/2?'left':'right';
+cx.font='600 10px Space Grotesk';cx.fillStyle='#e8934a';cx.textAlign=labelAlign;
+cx.fillText(`Current (Sol ${lastPt.sol})`,labelX,e.y+4);
+}
+
+// Scale bar (adjusted for zoom)
+const scaleKm=map2dZoom>3?0.1:map2dZoom>1.5?0.25:0.5;
+const scalePx=(scaleKm/111)/(fMaxLon-fMinLon)*w;
+cx.fillStyle='rgba(255,255,255,0.3)';cx.fillRect(w-20-scalePx,h-22,scalePx,2);
+cx.font='9px JetBrains Mono';cx.textAlign='center';cx.fillText(scaleKm+' km',w-20-scalePx/2,h-10);
+
+// Info
+cx.font='10px Space Grotesk';cx.fillStyle='rgba(255,255,255,0.3)';cx.textAlign='left';
+cx.fillText(`${pts.length} waypoints | Jezero Crater, Mars`+(map2dZoom>1?' | '+map2dZoom.toFixed(1)+'x':''),10,h-10);
+cx.textAlign='right';
+cx.fillText(`${fMinLat.toFixed(3)}°N to ${fMaxLat.toFixed(3)}°N`,w-10,16);
+
+// Zoom hint (shown when at 1x)
+if(map2dZoom===1){
+cx.font='9px JetBrains Mono';cx.fillStyle='rgba(255,255,255,0.15)';cx.textAlign='center';
+cx.fillText('Scroll to zoom · Drag to pan',w/2,h-10);
+}
+}
+
+// Click on 2D map
+$('jezeroMap').addEventListener('click',e=>{
+const c=$('jezeroMap');
+const rect=c.getBoundingClientRect();
+const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+const pts=realPoints.filter(p=>p.sol<=maxSol);
+if(!pts.length)return;
+const coords=pts.map(p=>[p.lon,p.lat]);
+const allLon=coords.map(c=>c[0]),allLat=coords.map(c=>c[1]);
+const padDeg=0.003;
+let minLon=Math.min(...allLon)-padDeg,maxLon2=Math.max(...allLon)+padDeg;
+let minLat=Math.min(...allLat)-padDeg,maxLat2=Math.max(...allLat)+padDeg;
+const w=rect.width,h=rect.height;
+const aspect=w/h;
+let lonR=maxLon2-minLon,latR=maxLat2-minLat;
+if(lonR/latR>aspect)latR=lonR/aspect;else lonR=latR*aspect;
+const cLon=(minLon+maxLon2)/2,cLat=(minLat+maxLat2)/2;
+minLon=cLon-lonR/2;maxLon2=cLon+lonR/2;minLat=cLat-latR/2;maxLat2=cLat+latR/2;
+
+let closest=-1,minD=20;
+pts.forEach((pt,i)=>{
+const px=(pt.lon-minLon)/(maxLon2-minLon)*w;
+const py=(1-(pt.lat-minLat)/(maxLat2-minLat))*h;
+const d=Math.hypot(px-mx,py-my);
+if(d<minD){minD=d;closest=i}
+});
+if(closest>=0){selIdx=closest;drawJezero2D();rWL();dE();
+const clickedPt=pts[closest];if(clickedPt)loadPhotosForSol(clickedPt.sol)}
+});
+
+// 2D map zoom (scroll wheel)
+$('jezeroMap').addEventListener('wheel',e=>{
+e.preventDefault();
+const delta=e.deltaY>0?0.85:1.18;
+map2dZoom=Math.max(1,Math.min(15,map2dZoom*delta));
+// Zoom toward cursor position
+if(delta>1){
+  const rect=$('jezeroMap').getBoundingClientRect();
+  const cx2=(e.clientX-rect.left-rect.width/2)/rect.width;
+  const cy2=(e.clientY-rect.top-rect.height/2)/rect.height;
+  map2dPanX+=cx2*20*(delta-1);
+  map2dPanY-=cy2*20*(delta-1);
+}
+if(map2dZoom<=1){map2dPanX=0;map2dPanY=0;map2dZoom=1}
+drawJezero2D();
+},{passive:false});
+
+// 2D map pan (drag)
+$('jezeroMap').addEventListener('pointerdown',e=>{
+if(e.button!==0)return;
+map2dDrag=true;map2dLastX=e.clientX;map2dLastY=e.clientY;
+$('jezeroMap').setPointerCapture(e.pointerId);
+$('jezeroMap').style.cursor='grabbing';
+});
+$('jezeroMap').addEventListener('pointermove',e=>{
+if(!map2dDrag)return;
+const dx=e.clientX-map2dLastX,dy=e.clientY-map2dLastY;
+map2dPanX+=dx/map2dZoom;
+map2dPanY+=dy/map2dZoom;
+map2dLastX=e.clientX;map2dLastY=e.clientY;
+drawJezero2D();
+});
+$('jezeroMap').addEventListener('pointerup',e=>{
+map2dDrag=false;
+$('jezeroMap').releasePointerCapture(e.pointerId);
+$('jezeroMap').style.cursor='crosshair';
+});
+
+// 2D map touch pinch-zoom
+let map2dTouchDist=null;
+$('jezeroMap').addEventListener('touchstart',e=>{
+if(e.touches.length===2){
+  map2dTouchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+}
+},{passive:true});
+$('jezeroMap').addEventListener('touchmove',e=>{
+if(e.touches.length===2&&map2dTouchDist){
+  const nd=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+  const scale=nd/map2dTouchDist;
+  map2dZoom=Math.max(1,Math.min(15,map2dZoom*scale));
+  map2dTouchDist=nd;
+  if(map2dZoom<=1){map2dPanX=0;map2dPanY=0;map2dZoom=1}
+  drawJezero2D();
+}
+},{passive:true});
+$('jezeroMap').addEventListener('touchend',()=>{map2dTouchDist=null});
+
+// Stats
+function uS(){
+const pts=realPoints.filter(p=>p.sol<=maxSol);
+const last=pts.length?pts[pts.length-1]:{sol:0,dist:0,elev:0};
+$('hS').textContent='Sol '+last.sol;
+$('hD').textContent=last.dist.toFixed(1)+' km';
+$('hP').textContent=pts.length;
+$('tp').innerHTML=[
+{v:last.dist.toFixed(1)+' km',l:'Total traverse',c:'var(--ms2)'},
+{v:last.sol,l:'Mission sols',c:'var(--cy)'},
+{v:pts.length,l:'Data points',c:'var(--em)'},
+{v:Math.round(last.elev)+' m',l:'Elevation',c:'var(--am)'},
+{v:realPathCoords.length,l:'Path coords',c:'var(--ac)'}
+].map(s=>`<div class="st"><div class="sv" style="color:${s.c}">${s.v}</div><div class="sl">${s.l}</div></div>`).join('');
+}
+
+// Waypoint list
+function rWL(){
+const l=$('wl');l.innerHTML='';
+const pts=realPoints.filter(p=>p.sol<=maxSol);
+const shown=[];
+const step=Math.max(1,Math.floor(pts.length/40));
+for(let i=0;i<pts.length;i+=step)shown.push({...pts[i],origIdx:i});
+if(shown.length>0&&shown[shown.length-1].sol!==pts[pts.length-1].sol)shown.push({...pts[pts.length-1],origIdx:pts.length-1});
+shown.reverse().forEach(pt=>{
+const d=document.createElement('div');
+d.className='wi'+(pt.origIdx===selIdx?' on':'');
+const isAI=isAIDrive(pt.sol);
+// Escape note text to prevent HTML injection from URL fields
+const safeNote=pt.note?pt.note.replace(/</g,'&lt;').replace(/>/g,'&gt;'):'';
+const shortNote=safeNote.length>60?safeNote.substring(0,60)+'…':safeNote;
+d.innerHTML=`<div class="wn" style="color:${isAI?'var(--ac)':'var(--ms2)'}">Sol ${pt.sol}${isAI?' ✦':''}</div><div class="wm">${pt.dist.toFixed(2)}km · ${Math.round(pt.elev)}m · ${pt.rmc}</div>${isAI?'<span class="wt ai">AI Drive (Claude)</span>':''}${shortNote?'<div style="font-size:9px;color:var(--tx3);margin-top:2px">'+shortNote+'</div>':''}`;
+d.onclick=()=>{selIdx=pt.origIdx;rWL();dE();if(currentTab==='2d')drawJezero2D();
+if(currentTab==='3d'){tX=pt.lat*Math.PI/180;tY=-(pt.lon+90)*Math.PI/180;tZ=1.8}
+loadPhotosForSol(pt.sol)};
+l.appendChild(d);
+});
+}
+
+// Charts
+function rsC(c){const r=c.getBoundingClientRect(),d=devicePixelRatio||1;c.width=r.width*d;c.height=r.height*d;c.style.width=r.width+'px';c.style.height=r.height+'px';return{w:r.width,h:r.height,d}}
+
+function dE(){
+const c=$('eC'),{w,h,d}=rsC(c),cx=c.getContext('2d');cx.setTransform(d,0,0,d,0,0);cx.clearRect(0,0,w,h);
+const pts=realPoints.filter(p=>p.sol<=maxSol);if(!pts.length)return;
+// Deduplicate by distance — keep only points where rover actually moved
+const moved=[pts[0]];
+for(let i=1;i<pts.length;i++){
+if(pts[i].dist>moved[moved.length-1].dist+0.001)moved.push(pts[i]);
+}
+if(moved.length<2){moved.length=0;moved.push(...pts.slice(0,Math.min(pts.length,10)));}
+const step=Math.max(1,Math.floor(moved.length/200));
+const sampled=[];for(let i=0;i<moved.length;i+=step)sampled.push(moved[i]);
+if(sampled[sampled.length-1]!==moved[moved.length-1])sampled.push(moved[moved.length-1]);
+const p={l:36,r:8,t:6,b:20},pw=w-p.l-p.r,ph=h-p.t-p.b;
+const es=sampled.map(v=>v.elev),mE=Math.min(...es)-5,xE=Math.max(...es)+5;
+const maxD=Math.max(...sampled.map(v=>v.dist),0.01);
+
+// Fill
+cx.beginPath();sampled.forEach((pt,i)=>{const x=p.l+pw*(pt.dist/maxD),y=p.t+ph*(1-(pt.elev-mE)/(xE-mE));i?cx.lineTo(x,y):cx.moveTo(x,y)});
+cx.lineTo(p.l+pw*(sampled[sampled.length-1].dist/maxD),p.t+ph);cx.lineTo(p.l,p.t+ph);cx.closePath();
+const gr=cx.createLinearGradient(0,p.t,0,p.t+ph);gr.addColorStop(0,'rgba(232,147,74,0.2)');gr.addColorStop(1,'rgba(232,147,74,0)');cx.fillStyle=gr;cx.fill();
+
+// Line
+cx.beginPath();sampled.forEach((pt,i)=>{const x=p.l+pw*(pt.dist/maxD),y=p.t+ph*(1-(pt.elev-mE)/(xE-mE));i?cx.lineTo(x,y):cx.moveTo(x,y)});
+cx.strokeStyle='rgba(232,147,74,0.8)';cx.lineWidth=1.5;cx.stroke();
+
+// AI drive region highlight
+if(maxSol>=1707){
+const aiSampled=sampled.filter(pt=>pt.sol>=1707&&pt.sol<=1709);
+if(aiSampled.length>=2){
+  cx.beginPath();aiSampled.forEach((pt,i)=>{const x=p.l+pw*(pt.dist/maxD),y=p.t+ph*(1-(pt.elev-mE)/(xE-mE));i?cx.lineTo(x,y):cx.moveTo(x,y)});
+  cx.strokeStyle='rgba(129,140,248,0.9)';cx.lineWidth=2.5;cx.stroke();
+}
+}
+
+// Selected point — only show if valid
+if(selIdx>=0&&selIdx<pts.length){
+const sp=pts[selIdx];
+if(sp.dist<=maxD){
+const x=p.l+pw*(sp.dist/maxD),y=p.t+ph*(1-(sp.elev-mE)/(xE-mE));
+cx.beginPath();cx.arc(x,y,4,0,Math.PI*2);cx.fillStyle='#fff';cx.fill();
+cx.strokeStyle='rgba(255,255,255,0.3)';cx.lineWidth=1;cx.stroke();
+}
+}
+
+cx.fillStyle='#475569';cx.font='9px JetBrains Mono';cx.textAlign='right';cx.fillText(Math.round(xE)+'m',p.l-3,p.t+8);cx.fillText(Math.round(mE)+'m',p.l-3,p.t+ph);
+cx.textAlign='center';cx.fillText('0',p.l,h-3);cx.fillText(maxD.toFixed(1)+'km',p.l+pw,h-3);
+}
+
+function dD(){
+const c=$('dC');if(!c)return;
+const{w,h,d}=rsC(c),cx=c.getContext('2d');cx.setTransform(d,0,0,d,0,0);cx.clearRect(0,0,w,h);
+const pts=realPoints.filter(p=>p.sol<=maxSol);if(pts.length<2)return;
+const p={l:36,r:8,t:6,b:16},pw=w-p.l-p.r,ph=h-p.t-p.b;
+// Compute per-drive distances (not rates — more intuitive)
+const drives=[];
+for(let i=1;i<pts.length;i++){
+const dd=(pts[i].dist-pts[i-1].dist)*1000;// km to m
+if(dd>0)drives.push({dist:dd,sol:pts[i].sol});
+}
+if(!drives.length){
+cx.fillStyle='#475569';cx.font='10px JetBrains Mono';cx.textAlign='center';
+cx.fillText('No drive data',w/2,h/2);return;
+}
+// Use 95th percentile as max to avoid outlier compression
+const sorted=[...drives].sort((a,b)=>a.dist-b.dist);
+const p95=sorted[Math.floor(sorted.length*0.95)]?.dist||sorted[sorted.length-1].dist;
+const mx=Math.max(p95,1);
+const bw=Math.max(2,pw/drives.length-0.5);
+drives.forEach((dr,i)=>{
+const x=p.l+pw*i/drives.length;
+const bh=Math.max(1,Math.min(dr.dist/mx,1.3)*ph);
+const isAI=isAIDrive(dr.sol);
+cx.fillStyle=isAI?'rgba(129,140,248,0.7)':'rgba(232,147,74,0.5)';
+cx.fillRect(x,p.t+ph-bh,bw,bh);
+});
+cx.fillStyle='#475569';cx.font='9px JetBrains Mono';
+cx.textAlign='right';cx.fillText(Math.round(mx)+'m',p.l-3,p.t+8);cx.fillText('0',p.l-3,p.t+ph);
+cx.textAlign='center';cx.fillText('Sol 0',p.l,h-3);cx.fillText('Sol '+pts[pts.length-1].sol,p.l+pw,h-3);
+}
+
+function dCC(){
+const c=$('cC');if(!c)return;
+const{w,h,d}=rsC(c),cx=c.getContext('2d');cx.setTransform(d,0,0,d,0,0);cx.clearRect(0,0,w,h);
+const pts=realPoints.filter(p=>p.sol<=maxSol);if(!pts.length)return;
+// Deduplicate: keep only points where dist actually changed (+ first and last)
+const deduped=[pts[0]];
+for(let i=1;i<pts.length;i++){
+if(pts[i].dist>deduped[deduped.length-1].dist+0.001||pts[i].sol>deduped[deduped.length-1].sol+5){
+  deduped.push(pts[i]);
+}
+}
+if(deduped[deduped.length-1]!==pts[pts.length-1])deduped.push(pts[pts.length-1]);
+const step=Math.max(1,Math.floor(deduped.length/500));
+const sampled=[];for(let i=0;i<deduped.length;i+=step)sampled.push(deduped[i]);
+if(sampled[sampled.length-1]!==deduped[deduped.length-1])sampled.push(deduped[deduped.length-1]);
+if(sampled.length<2)return;
+const p={l:36,r:8,t:6,b:20},pw=w-p.l-p.r,ph=h-p.t-p.b;
+const maxD=Math.max(...sampled.map(v=>v.dist),0.01);
+const maxS=Math.max(...sampled.map(v=>v.sol),1);
+// X axis by sol (proportional)
+const mapPt=(pt)=>({
+x:p.l+pw*(pt.sol/maxS),
+y:p.t+ph*(1-pt.dist/maxD)
+});
+// Fill area first
+cx.beginPath();
+sampled.forEach((pt,i)=>{const mp=mapPt(pt);i?cx.lineTo(mp.x,mp.y):cx.moveTo(mp.x,mp.y)});
+cx.lineTo(mapPt(sampled[sampled.length-1]).x,p.t+ph);cx.lineTo(p.l,p.t+ph);cx.closePath();
+const gr=cx.createLinearGradient(0,p.t,0,p.t+ph);gr.addColorStop(0,'rgba(34,211,238,0.15)');gr.addColorStop(1,'rgba(34,211,238,0)');cx.fillStyle=gr;cx.fill();
+// Stroke line on top
+cx.beginPath();
+sampled.forEach((pt,i)=>{const mp=mapPt(pt);i?cx.lineTo(mp.x,mp.y):cx.moveTo(mp.x,mp.y)});
+cx.strokeStyle='rgba(34,211,238,0.7)';cx.lineWidth=1.5;cx.stroke();
+// Labels
+cx.fillStyle='#475569';cx.font='9px JetBrains Mono';cx.textAlign='right';cx.fillText(maxD.toFixed(1)+'km',p.l-3,p.t+8);cx.fillText('0',p.l-3,p.t+ph);
+cx.textAlign='center';cx.fillText('Sol 0',p.l,h-3);cx.fillText('Sol '+Math.round(maxS),p.l+pw,h-3);
+}
+
+$('sS').addEventListener('input',e=>{maxSol=+e.target.value;$('sO').textContent='Sol '+maxSol;uS();rWL();dE();dD();dCC();buildPath3D();if(currentTab==='2d')drawJezero2D()});
+
+window.addEventListener('resize',()=>{
+if(ren){const w=$('gc').clientWidth,h=500;cam.aspect=w/h;cam.updateProjectionMatrix();ren.setSize(w,h)}
+dE();dD();dCC();if(currentTab==='2d')drawJezero2D();
+});
+
+// Start
+loadData();
+
+// ========== NASA MARS PHOTOS API ==========
+const NASA_API='https://api.nasa.gov/mars-photos/api/v1/rovers/perseverance/photos';
+const NASA_KEY_STORAGE='persExplorerNasaApiKey';
+const FALLBACK_NASA_KEY='DEMO_KEY';
+let photoCache={};
+let currentPhotos=[];
+let currentCamFilter='ALL';
+let activePhotoRequestSol=null;
+
+function getNASAKey(){
+const saved=localStorage.getItem(NASA_KEY_STORAGE);
+return saved&&saved.trim()?saved.trim():FALLBACK_NASA_KEY;
+}
+
+function setNASAKey(){
+const existing=localStorage.getItem(NASA_KEY_STORAGE)||'';
+const input=window.prompt('Paste your NASA API key here. It will be saved only in this browser for this dashboard.',existing);
+if(input===null)return false;
+const clean=input.trim();
+if(clean)localStorage.setItem(NASA_KEY_STORAGE,clean);
+else localStorage.removeItem(NASA_KEY_STORAGE);
+photoCache={};
+return true;
+}
+window.setNASAKey=setNASAKey;
+
+function escapeHtml(v){
+return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function renderPhotoError(message,detailHtml=''){
+$('photoCamTabs').innerHTML='';
+$('photoGrid').innerHTML=`<div style="color:var(--tx3);font-size:12px;padding:20px;text-align:center;line-height:1.6">${message}${detailHtml}</div>`;
+}
+
+async function loadPhotosForSol(sol,retryCount=0){
+if(sol<0)return;
+const key='sol_'+sol;
+activePhotoRequestSol=sol;
+$('photoSol').textContent='— Sol '+sol;
+$('photoCamTabs').innerHTML='';
+$('photoGrid').innerHTML='<div class="photo-loading"><div class="sp" style="width:18px;height:18px;border-width:2px"></div>Loading photos for Sol '+sol+'...</div>';
+$('photoStatus').textContent='';
+
+if(photoCache[key]){
+renderPhotos(photoCache[key],sol);return;
+}
+
+try{
+const apiKey=getNASAKey();
+const url=`${NASA_API}?sol=${encodeURIComponent(sol)}&api_key=${encodeURIComponent(apiKey)}`;
+const res=await fetch(url,{cache:'force-cache'});
+if(activePhotoRequestSol!==sol)return;
+if(res.status===429){
+  throw new Error(apiKey===FALLBACK_NASA_KEY?'RATE_LIMIT_DEMO_KEY':'RATE_LIMIT_CUSTOM_KEY');
+}
+if(!res.ok)throw new Error('HTTP '+res.status);
+const data=await res.json();
+const photos=Array.isArray(data.photos)?data.photos:[];
+photoCache[key]=photos;
+renderPhotos(photos,sol);
+}catch(e){
+if(activePhotoRequestSol!==sol)return;
+if((e.message==='RATE_LIMIT_DEMO_KEY'||e.message==='RATE_LIMIT_CUSTOM_KEY')&&retryCount<1){
+  const changed=setNASAKey();
+  if(changed){
+    await loadPhotosForSol(sol,retryCount+1);
+    return;
+  }
+}
+if(e.message==='RATE_LIMIT_DEMO_KEY'){
+  renderPhotoError(
+    'NASA demo key hit the rate limit (HTTP 429).',
+    '<div style="margin-top:10px"><button class="cam-tab on" onclick="setNASAKey();loadPhotosForSol('+sol+',1)">Set your NASA API key</button></div><div style="margin-top:10px;color:var(--tx3)">Without your own key, the photo panel will keep failing after the shared demo quota is exhausted.</div>'
+  );
+  $('photoStatus').textContent='Error: HTTP 429 (DEMO_KEY rate limit)';
+  return;
+}
+if(e.message==='RATE_LIMIT_CUSTOM_KEY'){
+  renderPhotoError('Your NASA API key also hit the rate limit (HTTP 429).');
+  $('photoStatus').textContent='Error: HTTP 429 (your API key)';
+  return;
+}
+renderPhotoError('Failed to load photos: '+escapeHtml(e.message));
+$('photoStatus').textContent='Error: '+e.message;
+}
+}
+
+function renderPhotos(photos,sol){
+currentPhotos=photos;
+currentCamFilter='ALL';
+
+if(!photos.length){
+$('photoGrid').innerHTML='<div style="color:var(--tx3);font-size:12px;padding:20px;text-align:center">No photos available for Sol '+sol+'</div>';
+$('photoStatus').textContent='0 photos';
+$('photoCamTabs').innerHTML='';
+return;
+}
+
+const cams={};
+photos.forEach(p=>{const cn=p.camera.name;cams[cn]=(cams[cn]||0)+1});
+const camNames=Object.keys(cams).sort();
+let tabHtml='<button class="cam-tab on" onclick="filterCam(\'ALL\')">All ('+photos.length+')</button>';
+camNames.forEach(cn=>{
+const safeCn=JSON.stringify(cn);
+tabHtml+=`<button class="cam-tab" onclick='filterCam(${safeCn})'>${escapeHtml(cn)} (${cams[cn]})</button>`;
+});
+$('photoCamTabs').innerHTML=tabHtml;
+
+displayFilteredPhotos(photos);
+$('photoStatus').textContent=photos.length+' photos · '+camNames.length+' cameras · Sol '+sol;
+}
+
+function filterCam(cam){
+currentCamFilter=cam;
+document.querySelectorAll('.cam-tab').forEach(t=>{
+t.classList.toggle('on',t.textContent.startsWith(cam==='ALL'?'All':cam));
+});
+const filtered=cam==='ALL'?currentPhotos:currentPhotos.filter(p=>p.camera.name===cam);
+displayFilteredPhotos(filtered);
+}
+window.filterCam=filterCam;
+window.loadPhotosForSol=loadPhotosForSol;
+
+function displayFilteredPhotos(photos){
+const show=photos.slice(0,24);
+$('photoGrid').innerHTML=show.map(p=>{
+const img=escapeHtml(p.img_src);
+const info=escapeHtml('Sol '+p.sol+' · '+p.camera.full_name);
+const date=escapeHtml(p.earth_date);
+const camName=escapeHtml(p.camera.name);
+return `<div class="photo-thumb" onclick="openLightbox('${img}','${info}','${date}')"><img src="${img}" loading="lazy" alt="Mars Sol ${p.sol}" referrerpolicy="no-referrer"><div class="photo-cam">${camName}</div><div class="photo-label">${date}</div></div>`;
+}).join('');
+if(photos.length>24){
+$('photoGrid').innerHTML+=`<div style="color:var(--tx3);font-size:11px;padding:15px;text-align:center;grid-column:1/-1">Showing 24 of ${photos.length} photos</div>`;
+}
+}
+
+function openLightbox(src,info,date){
+const lb=$('photoLightbox');
+$('lbImg').src=src;
+$('lbInfo').textContent=info+' · '+date;
+lb.style.display='flex';
+lb.onclick=e=>{if(e.target===lb)closeLightbox()};
+document.addEventListener('keydown',lbKey);
+}
+function closeLightbox(){
+$('photoLightbox').style.display='none';
+document.removeEventListener('keydown',lbKey);
+}
+function lbKey(e){if(e.key==='Escape')closeLightbox()}
+window.openLightbox=openLightbox;
+window.closeLightbox=closeLightbox;
+</script>
+</body>
+</html>
