@@ -1,0 +1,50 @@
+{
+  "0": [
+    {
+      "src": "images/0/1.svg",
+      "camera": "LANDING SITE",
+      "earth_date": "Featured Demo",
+      "title": "Sol 0 — Landing overview"
+    }
+  ],
+  "543": [
+    {
+      "src": "images/543/1.svg",
+      "camera": "TRAVERSE MILESTONE",
+      "earth_date": "Featured Demo",
+      "title": "Sol 543 — Traverse milestone"
+    }
+  ],
+  "886": [
+    {
+      "src": "images/886/1.svg",
+      "camera": "PANORAMA",
+      "earth_date": "Featured Demo",
+      "title": "Sol 886 — Jezero panorama"
+    }
+  ],
+  "911": [
+    {
+      "src": "images/911/1.svg",
+      "camera": "SCIENCE TARGET",
+      "earth_date": "Featured Demo",
+      "title": "Sol 911 — Science waypoint"
+    }
+  ],
+  "933": [
+    {
+      "src": "images/933/1.svg",
+      "camera": "ROVER NAVCAM",
+      "earth_date": "Featured Demo",
+      "title": "Sol 933 — Rover navigation view"
+    }
+  ],
+  "1047": [
+    {
+      "src": "images/1047/1.svg",
+      "camera": "DELTA FRONT",
+      "earth_date": "Featured Demo",
+      "title": "Sol 1047 — Delta front scene"
+    }
+  ]
+}
